@@ -1,5 +1,9 @@
-import React, { Component } from 'react';
-import { View, Animated, PanResponder } from 'react-native';
+import React, { Component } from "react";
+import { View, Animated, PanResponder, Dimensions } from "react-native";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
+//Se ele precisonar para direita 25% da tela, quer dizer que ele curtiu.
+const SWIPE_TRESHOLD = 0.25 * SCREEN_WIDTH;
 
 class Deck extends Component {
   constructor(props) {
@@ -12,18 +16,32 @@ class Deck extends Component {
         //Passando a posição do Elemento x y e atualizando conforme se move.
         position.setValue({ x: gesture.dx, y: gesture.dy });
       },
-      onPanResponderRelease: () => {}
+      onPanResponderRelease: (event, gesture) => {
+        if (gesture.dx > SWIPE_TRESHOLD) {
+          console.log("Curtiu a foto para direita");
+        } else if (gesture.dx < -SWIPE_TRESHOLD) {
+          console.log("NÃO Curtiu a foto foi para esquerda");
+        } else {
+          this.resetPosition();
+        }
+      }
     });
 
     this.state = { panResponder, position };
+  }
+
+  resetPosition() {
+    Animated.spring(this.state.position, {
+      toValue: { x: 0, y: 0 }
+    }).start();
   }
 
   getCardStyle() {
     const { position } = { ...this.state };
 
     const rotate = position.x.interpolate({
-      inputRange: [-500, 0, 500],
-      outputRange: ['-120deg', '0deg', '120deg']
+      inputRange: [-SCREEN_WIDTH * 1.5, 0, SCREEN_WIDTH * 1.5],
+      outputRange: ["-120deg", "0deg", "120deg"]
     });
 
     return {
